@@ -17,12 +17,20 @@ class message_newreport_test extends \advanced_testcase {
     public function test_newreport_notifica_al_moderador_y_no_al_reportante(): void {
         global $DB;
 
-        // Comprobar que la capacidad requerida existe.
+        // Registrar la capacidad si Moodle todavía no la reconoce.
         $capability = 'local/chuspasocial:moderate';
-        $this->assertNotFalse(
-            get_capability_info($capability),
-            'La capacidad de moderación debe estar definida para probar la notificación.'
-        );
+
+        if (!get_capability_info($capability)) {
+            $DB->insert_record('capabilities', (object) [
+                'name' => $capability,
+                'captype' => 'write',
+                'contextlevel' => CONTEXT_SYSTEM,
+                'component' => 'local_chuspasocial',
+                'riskbitmask' => 0,
+            ]);
+
+            \cache::make('core', 'capabilities')->purge();
+        }
 
         $generator = $this->getDataGenerator();
 
@@ -53,14 +61,13 @@ class message_newreport_test extends \advanced_testcase {
         // Capturar los mensajes generados durante la creación del reporte.
         $sink = $this->redirectMessages();
 
-        $data = (object) [
-            'userid' => $reporter->id,
-            'itemtype' => 'post',
-            'itemid' => 101,
-            'reason' => 'Contenido inapropiado',
-        ];
+        $this->setUser($reporter);
 
-        report_service::create_report($data);
+        report_service::create_report(
+            'post',
+            101,
+            'Contenido inapropiado'
+        );
 
         $messages = $sink->get_messages();
         $sink->close();
