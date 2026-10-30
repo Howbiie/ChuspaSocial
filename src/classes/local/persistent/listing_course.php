@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Este archivo forma parte de Moodle: https://moodle.org/
 //
 // Moodle es software libre: puedes redistribuirlo o modificarlo
@@ -37,12 +37,38 @@ class listing_course extends persistent {
         return [
             'listingid' => [
                 'type' => PARAM_INT,
-                'default' => 0,
+                'default' => null,
             ],
             'courseid' => [
                 'type' => PARAM_INT,
-                'default' => 0,
+                'default' => null,
             ],
         ];
+    }
+
+    /**
+     * Valida que el identificador del anuncio sea mayor que cero.
+     *
+     * @param int|null $value Identificador del anuncio.
+     * @return bool|string
+     */
+    protected function validate_listingid($value) {
+        if (empty($value) || $value <= 0) {
+            return 'El identificador del anuncio debe ser mayor que cero.';
+        }
+        return true;
+    }
+
+    /**
+     * Valida que el identificador de la materia sea mayor que cero.
+     *
+     * @param int|null $value Identificador de la materia.
+     * @return bool|string
+     */
+    protected function validate_courseid($value) {
+        if (empty($value) || $value <= 0) {
+            return 'El identificador de la materia debe ser mayor que cero.';
+        }
+        return true;
     }
 }
