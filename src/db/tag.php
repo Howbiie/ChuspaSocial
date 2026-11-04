@@ -28,5 +28,6 @@ $tagareas = [
     [
         'itemtype' => 'local_chuspasocial_post',
         'component' => 'local_chuspasocial',
+        'showstandard' => core_tag_tag::BOTH_STANDARD_AND_NOT,
     ],
 ];
