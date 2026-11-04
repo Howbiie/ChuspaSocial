@@ -147,4 +147,29 @@ final class post_form_test extends advanced_testcase {
 
         $this->assertFalse($quickformdenied->elementExists('announcement'));
     }
+        /**
+     * Verifies that content with 2000 characters is accepted.
+     */
+    public function test_validation_content_2000_characters_returns_no_error(): void {
+        $this->resetAfterTest();
+        $form = $this->create_post_form(['courseid' => 0]);
+
+        $content = str_repeat('a', 2000);
+        $errors = $form->validation(['content' => ['text' => $content]], []);
+
+        $this->assertArrayNotHasKey('content', $errors);
+    }
+
+    /**
+     * Verifies that content exceeding 2000 characters is rejected.
+     */
+    public function test_validation_content_over_2000_characters_returns_error(): void {
+        $this->resetAfterTest();
+        $form = $this->create_post_form(['courseid' => 0]);
+
+        $content = str_repeat('a', 2001);
+        $errors = $form->validation(['content' => ['text' => $content]], []);
+
+        $this->assertArrayHasKey('content', $errors);
+    }
 }
