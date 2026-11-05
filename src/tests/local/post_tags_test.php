@@ -31,7 +31,6 @@ use local_chuspasocial\local\persistent\post;
  * @covers     \local_chuspasocial\local\post_service
  */
 final class post_tags_test extends advanced_testcase {
-
     /** @var string Componente de las etiquetas. */
     private const COMPONENT = 'local_chuspasocial';
 
@@ -115,6 +114,20 @@ final class post_tags_test extends advanced_testcase {
         $this->save_tags($post, ['venta', 'fisica']);
 
         $this->assertSame(['fisica', 'venta'], $this->get_tags($post));
+    }
+
+    /**
+     * Verifica que las etiquetas se guarden en minusculas y sin espacios externos.
+     */
+    public function test_normalize_post_tags(): void {
+        $post = $this->create_post_as_author();
+
+        $this->save_tags($post, ['  PROGRAMACION  ', '  Moodle  ']);
+
+        $this->assertSame(
+            ['moodle', 'programacion'],
+            $this->get_tags($post)
+        );
     }
 
     /**
