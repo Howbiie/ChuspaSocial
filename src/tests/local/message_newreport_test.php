@@ -1,15 +1,30 @@
 <?php
-namespace local_chuspasocial\local;
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
+namespace local_chuspasocial\local;
 /**
  * Pruebas para la notificación newreport.
  *
  * @package    local_chuspasocial
  * @category   test
+ * @copyright  2026 SIS-INF
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_chuspasocial\local\report_service::create_report
  */
 class message_newreport_test extends \advanced_testcase {
-
     protected function setUp(): void {
         $this->resetAfterTest(true);
     }
@@ -75,6 +90,19 @@ class message_newreport_test extends \advanced_testcase {
         // Debe enviarse una notificación al moderador.
         $this->assertCount(1, $messages);
         $this->assertEquals($moderator->id, $messages[0]->useridto);
+
+        // Verificar el asunto y el contenido del mensaje.
+        $expectedsubject = get_string(
+            'messageprovider:newreport_subject',
+            'local_chuspasocial',
+            'post #101'
+        );
+
+        $this->assertSame($expectedsubject, $messages[0]->subject);
+        $this->assertStringContainsString(
+            'Contenido inapropiado',
+            $messages[0]->fullmessage
+        );
 
         // El reportante no debe recibir la notificación.
         foreach ($messages as $message) {
