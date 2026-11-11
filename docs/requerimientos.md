@@ -10,6 +10,7 @@
 | RF-002 | Publicar texto en el muro general, visible para todo el campus | Alta | Pendiente |
 | RF-003 | Publicar en el muro de una materia | Alta | Pendiente |
 | RF-004 | Adjuntar imágenes a una publicación | Media | Pendiente |
+| RF-005 | Editar una publicación propia y mostrar la marca «editado» | Media | Pendiente |
 | RF-006 | Eliminar una publicación propia | Alta | Pendiente |
 | RF-007 | Ver el muro de una materia | Alta | Pendiente |
 | RF-008 | Cargar más publicaciones | Media | Pendiente |
@@ -154,6 +155,18 @@
 - **Dado** un usuario autenticado en la pantalla de crear/editar publicación,
 - **Cuando** intenta adjuntar un archivo con un formato no permitido o supera la cantidad máxima N de imágenes permitidas,
 - **Entonces** el sistema debe mostrar un mensaje de error restrictivo y evitar que se suban las imágenes.
+
+##### RF-005 - Editar una publicación propia
+
+**Criterio 1**
+- **Dado** un usuario autenticado que tiene una publicación propia en el muro,
+- **Cuando** modifica el texto de su publicación y guarda los cambios,
+- **Entonces** el sistema actualiza la publicación y la muestra con el texto modificado y la marca «editado».
+
+**Criterio 2**
+- **Dado** un usuario que intenta editar una publicación creada por otro usuario,
+- **Cuando** confirma la acción de edición,
+- **Entonces** el sistema rechaza la operación y mantiene la publicación sin cambios.
 
 ##### RF-006 - Eliminar una publicación propia
 
