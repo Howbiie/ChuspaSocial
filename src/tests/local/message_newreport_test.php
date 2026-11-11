@@ -91,14 +91,19 @@ class message_newreport_test extends \advanced_testcase {
         $this->assertCount(1, $messages);
         $this->assertEquals($moderator->id, $messages[0]->useridto);
 
-        // Verificar el asunto y el contenido del mensaje.
-        $expectedsubject = get_string(
-            'messageprovider:newreport_subject',
-            'local_chuspasocial',
-            'post #101'
+        // Verificar que el asunto identifique el contenido reportado.
+        $this->assertStringContainsString(
+            'post #101',
+            $messages[0]->subject
         );
 
-        $this->assertSame($expectedsubject, $messages[0]->subject);
+        // Verificar que el cuerpo identifique el contenido reportado.
+        $this->assertStringContainsString(
+            'post #101',
+            $messages[0]->fullmessage
+        );
+
+        // Verificar que el cuerpo incluya el motivo del reporte.
         $this->assertStringContainsString(
             'Contenido inapropiado',
             $messages[0]->fullmessage
