@@ -88,7 +88,8 @@ if ($data = $form->get_data()) {
         listing_service::update_listing($id, $record);
     } else {
         $record->userid = (int) $USER->id;
-        $id = (int) listing_service::create_listing($record);
+        $createdlisting = listing_service::create_listing($record);
+        $id = (int) $createdlisting->get('id');
     }
 
     listing_service::set_courses($id, $data->course ?? []);
