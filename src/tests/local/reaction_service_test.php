@@ -116,4 +116,64 @@ class reaction_service_test extends advanced_testcase {
             'userid' => $user->id,
         ]));
     }
+
+    /**
+     * Tests reaction counts for multiple posts.
+     *
+     * @covers \local_chuspasocial\local\reaction_service::count_for_posts
+     */
+    public function test_count_for_posts_multiple_posts(): void {
+        global $DB;
+
+        $generator = $this->getDataGenerator();
+
+        $author = $generator->create_user();
+        $user1 = $generator->create_user();
+        $user2 = $generator->create_user();
+
+        $post1 = $this->create_post($author->id, 0);
+        $post2 = $this->create_post($author->id, 0);
+        $post3 = $this->create_post($author->id, 0);
+
+        // One reaction for the first post.
+        $DB->insert_record('local_chuspasocial_reaction', [
+            'postid' => $post1,
+            'userid' => $user1->id,
+            'type' => 'like',
+            'timecreated' => time(),
+        ]);
+
+        // Two reactions for the second post.
+        foreach ([$user1->id, $user2->id] as $userid) {
+            $DB->insert_record('local_chuspasocial_reaction', [
+                'postid' => $post2,
+                'userid' => $userid,
+                'type' => 'like',
+                'timecreated' => time(),
+            ]);
+        }
+
+        // The third post has no reactions.
+        $result = reaction_service::count_for_posts([
+            $post1,
+            $post2,
+            $post3,
+        ]);
+
+        $this->assertEquals(1, $result[$post1]);
+        $this->assertEquals(2, $result[$post2]);
+        $this->assertEquals(0, $result[$post3]);
+        $this->assertCount(3, $result);
+    }
+
+    /**
+     * Tests reaction counts with an empty post list.
+     *
+     * @covers \local_chuspasocial\local\reaction_service::count_for_posts
+     */
+    public function test_count_for_posts_empty_list(): void {
+        $result = reaction_service::count_for_posts([]);
+
+        $this->assertSame([], $result);
+    }
 }
