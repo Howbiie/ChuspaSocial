@@ -71,6 +71,17 @@ final class post_form_test extends advanced_testcase {
     }
 
     /**
+     * Verifies that content with only spaces returns an error.
+     */
+    public function test_validation_content_only_spaces_returns_error(): void {
+        $this->resetAfterTest();
+        $form = $this->create_post_form(['courseid' => 0]);
+
+        $errors = $form->validation(['content' => ['text' => '   ']], []);
+
+        $this->assertArrayHasKey('content', $errors);
+    }
+    /**
      * Verifies that validation of content with only html tags returns an error.
      */
     public function test_validation_content_html_only_returns_error(): void {
@@ -147,7 +158,7 @@ final class post_form_test extends advanced_testcase {
 
         $this->assertFalse($quickformdenied->elementExists('announcement'));
     }
-        /**
+    /**
      * Verifies that content with 2000 characters is accepted.
      */
     public function test_validation_content_2000_characters_returns_no_error(): void {
