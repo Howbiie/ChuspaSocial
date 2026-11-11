@@ -99,4 +99,70 @@ class reaction_service {
 
         return true;
     }
+
+    /**
+     * Counts reactions for multiple posts using a single query.
+     *
+     * @param array $postids List of post IDs.
+     * @return array Reaction counts indexed by post ID.
+     */
+    public static function count_for_posts(array $postids): array {
+        global $DB;
+
+        if (empty($postids)) {
+            return [];
+        }
+
+        $postids = array_values(array_unique($postids));
+        $counts = array_fill_keys($postids, 0);
+
+        list($insql, $params) = $DB->get_in_or_equal($postids, SQL_PARAMS_NAMED, 'postid');
+
+        $sql = "SELECT postid, COUNT(*) AS total
+                  FROM {local_chuspasocial_reaction}
+                 WHERE postid $insql
+              GROUP BY postid";
+
+        $records = $DB->get_records_sql($sql, $params);
+
+        foreach ($records as $record) {
+            $counts[$record->postid] = (int) $record->total;
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Checks whether the current user reacted to multiple posts.
+     *
+     * @param array $postids List of post IDs.
+     * @return array Reaction status indexed by post ID.
+     */
+    public static function has_reacted_many(array $postids): array {
+        global $DB, $USER;
+
+        if (empty($postids)) {
+            return [];
+        }
+
+        $postids = array_values(array_unique($postids));
+        $result = array_fill_keys($postids, false);
+
+        list($insql, $params) = $DB->get_in_or_equal($postids, SQL_PARAMS_NAMED, 'postid');
+
+        $params['userid'] = (int) $USER->id;
+
+        $sql = "SELECT postid
+                  FROM {local_chuspasocial_reaction}
+                 WHERE postid $insql
+                   AND userid = :userid";
+
+        $records = $DB->get_records_sql($sql, $params);
+
+        foreach ($records as $record) {
+            $result[$record->postid] = true;
+        }
+
+        return $result;
+    }
 }

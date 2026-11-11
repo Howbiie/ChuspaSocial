@@ -87,6 +87,7 @@ class provider implements
             'description' => 'privacy:metadata:listing:description',
             'price' => 'privacy:metadata:listing:price',
             'externalcontact' => 'privacy:metadata:listing:externalcontact',
+            'category' => 'privacy:metadata:listing:category',
             'status' => 'privacy:metadata:listing:status',
             'timecreated' => 'privacy:metadata:listing:timecreated',
             'timemodified' => 'privacy:metadata:listing:timemodified',
@@ -131,7 +132,16 @@ class provider implements
                                      FROM {local_chuspasocial_report} rc
                                      JOIN {local_chuspasocial_comment} cc ON cc.id = rc.itemid
                                     WHERE rc.itemtype = 'comment' AND cc.postid = p.id
-                                          AND rc.reporterid = :commentreporter))";
+                                          AND rc.reporterid = :commentreporter)
+                        OR EXISTS (SELECT 1
+                                     FROM {local_chuspasocial_report} rsp
+                                    WHERE rsp.itemtype = 'post' AND rsp.itemid = p.id
+                                          AND rsp.resolvedby = :postresolver)
+                        OR EXISTS (SELECT 1
+                                     FROM {local_chuspasocial_report} rsc
+                                     JOIN {local_chuspasocial_comment} rscc ON rscc.id = rsc.itemid
+                                    WHERE rsc.itemtype = 'comment' AND rscc.postid = p.id
+                                          AND rsc.resolvedby = :commentresolver))";
         $contextlist->add_from_sql($sql, [
             'contextcourse' => CONTEXT_COURSE,
             'postuser' => $userid,
@@ -139,6 +149,8 @@ class provider implements
             'reactionuser' => $userid,
             'postreporter' => $userid,
             'commentreporter' => $userid,
+            'postresolver' => $userid,
+            'commentresolver' => $userid,
         ]);
 
         // System context.
@@ -178,7 +190,21 @@ class provider implements
                                     WHERE ff.itemtype = 'user' AND ff.itemid = :followeduser)
                         OR EXISTS (SELECT 1
                                      FROM {local_chuspasocial_listing} l
-                                    WHERE l.userid = :listinguser))";
+                                    WHERE l.userid = :listinguser)
+                        OR EXISTS (SELECT 1
+                                     FROM {local_chuspasocial_report} rsp
+                                     JOIN {local_chuspasocial_post} rspost ON rspost.id = rsp.itemid
+                                    WHERE rsp.itemtype = 'post' AND rspost.courseid = 0
+                                          AND rsp.resolvedby = :postresolver)
+                        OR EXISTS (SELECT 1
+                                     FROM {local_chuspasocial_report} rsc
+                                     JOIN {local_chuspasocial_comment} rscc ON rscc.id = rsc.itemid
+                                     JOIN {local_chuspasocial_post} rscpost ON rscpost.id = rscc.postid
+                                    WHERE rsc.itemtype = 'comment' AND rscpost.courseid = 0
+                                          AND rsc.resolvedby = :commentresolver)
+                        OR EXISTS (SELECT 1
+                                     FROM {local_chuspasocial_report} rsl
+                                    WHERE rsl.itemtype = 'listing' AND rsl.resolvedby = :listingresolver))";
         $contextlist->add_from_sql($sql, [
             'contextsystem' => CONTEXT_SYSTEM,
             'postuser' => $userid,
@@ -190,6 +216,9 @@ class provider implements
             'followuser' => $userid,
             'followeduser' => $userid,
             'listinguser' => $userid,
+            'postresolver' => $userid,
+            'commentresolver' => $userid,
+            'listingresolver' => $userid,
         ]);
 
         return $contextlist;

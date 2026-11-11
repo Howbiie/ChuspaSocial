@@ -60,14 +60,16 @@ class listing_course extends persistent {
     }
 
     /**
-     * Valida que el identificador de la materia sea mayor que cero.
+     * Valida que el identificador de la materia sea mayor que cero y que el curso exista.
      *
      * @param int|null $value Identificador de la materia.
-     * @return bool|string
+     * @return bool|\lang_string
      */
     protected function validate_courseid($value) {
-        if (empty($value) || $value <= 0) {
-            return 'El identificador de la materia debe ser mayor que cero.';
+        global $DB;
+
+        if (empty($value) || $value <= 0 || !$DB->record_exists('course', ['id' => $value])) {
+            return new \lang_string('invalidcourseid', 'error');
         }
         return true;
     }

@@ -25,6 +25,7 @@
     Data attributes required for JS:
     * data-postid
     * data-action=report
+    * data-action=toggle-reaction
 
     Context variables required for this template:
     * id - Post id.
@@ -33,6 +34,8 @@
     * timecreated - Unix timestamp of the post.
     * content - Post content, already formatted with format_text().
     * isannouncement - Boolean, true when the post type is announcement.
+    * hasreacted - Boolean, true when the current user has reacted to the post.
+    * reactions - Number of reactions of the post.
     * postid - Id of this post (same as id), passed to the comments template.
     * comments - List of comments, using the local_chuspasocial/comments context.
     * tags - List of tags of the post. Each one has:
@@ -47,6 +50,8 @@
         "timecreated": 1760000000,
         "content": "<p>La biblioteca abre hasta las 20:00.</p>",
         "isannouncement": true,
+        "hasreacted": true,
+        "reactions": 3,
         "postid": 1,
         "comments": [
             {
@@ -95,6 +100,13 @@
                  loading="lazy">
             {{/images}}
         </div>
+
+        <button type="button" class="btn btn-link mt-2" data-action="toggle-reaction" data-postid="{{id}}"
+                aria-pressed="{{#hasreacted}}true{{/hasreacted}}{{^hasreacted}}false{{/hasreacted}}"
+                aria-label="{{#str}} chuspasocial:react, local_chuspasocial {{/str}}">
+            {{#pix}} i/star, core {{/pix}}
+            <span class="reaction-count" data-region="reaction-count">{{reactions}}</span>
+        </button>
 
         <button type="button" class="btn btn-link mt-2" data-action="report" data-postid="{{id}}"
                 aria-label="{{#str}} chuspasocial:report, local_chuspasocial {{/str}}">

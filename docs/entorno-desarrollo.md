@@ -412,6 +412,401 @@ bin/moodle-docker-compose start
 | Los comandos dicen que falta `MOODLE_DOCKER_WWWROOT` | Se cerró la ventana de Git Bash | Volver a ejecutar los `export` del paso 3 |
 | El plugin no aparece en Extensiones | La ruta de `local.yml` no es la de tu fork | Corregir la ruta y ejecutar `bin/moodle-docker-compose up -d` otra vez |
 
+## Linux (Ubuntu)
+
+Esta guía explica cómo preparar un entorno de desarrollo local de ChuspaSocial en **Ubuntu 24.04 LTS**, utilizando Moodle 4.5, PHP 8.3 y MariaDB 10.11.
+
+El código del plugin se mantiene en la carpeta `src/` del repositorio ChuspaSocial y se conecta con Moodle mediante un enlace simbólico, de modo que los cambios se reflejen sin copiar archivos manualmente.
+
+**Estado de validación:** instalación comprobada en Linux Mint 22.3, distribución basada en Ubuntu 24.04 LTS, con PHP 8.3.6, MariaDB 10.11.14 y Moodle 4.5.14+. Se verificó el inicio de sesión como administrador y la instalación de `local_chuspasocial` versión 0.1.0. La instalación no ha sido probada directamente en Ubuntu 24.04.
+
+### Requisitos
+
+- Ubuntu 24.04 LTS o una distribución compatible.
+- PHP 8.3 y las extensiones necesarias para Moodle.
+- MariaDB 10.11.
+- Git.
+- Acceso a una terminal con permisos para instalar paquetes.
+- Repositorio ChuspaSocial clonado en el equipo.
+
+Todos los comandos se ejecutan en una terminal de Linux. Se utiliza la carpeta personal del usuario para almacenar los proyectos, por lo que no es necesario sustituir las rutas que contienen `$HOME`.
+
+### 1. Instalar PHP y sus extensiones
+
+Actualiza el índice de paquetes e instala PHP, Git y las extensiones necesarias:
+
+```bash
+sudo apt update
+sudo apt install -y git unzip php8.3-cli php8.3-curl \
+  php8.3-gd php8.3-intl php8.3-mbstring \
+  php8.3-xml php8.3-zip php8.3-soap php8.3-mysql
+```
+
+Comprueba la versión de PHP:
+
+```bash
+php -v
+```
+
+Debe mostrar PHP 8.3.x.
+
+Verifica las extensiones cargadas:
+
+```bash
+php -m | grep -Ei 'curl|gd|intl|mbstring|mysqli|soap|xml|zip|sodium'
+```
+
+Comprueba también que `sodium` esté habilitada, ya que es necesaria para Moodle 4.5.
+
+Moodle requiere que `max_input_vars` tenga un valor de al menos `5000`.
+
+Abre la configuración de PHP utilizada desde la terminal:
+
+```bash
+sudo nano /etc/php/8.3/cli/php.ini
+```
+
+Busca `max_input_vars` y establece el siguiente valor, sin punto y coma al inicio:
+
+```ini
+max_input_vars = 5000
+```
+
+Guarda los cambios y comprueba la configuración:
+
+```bash
+php -r 'echo ini_get("max_input_vars").PHP_EOL;'
+```
+
+El resultado esperado es:
+
+```text
+5000
+```
+
+Si el resultado sigue siendo `1000`, verifica que la línea no esté comentada y que hayas modificado el archivo indicado por `php --ini`.
+
+### 2. Instalar y configurar MariaDB
+
+Instala el servidor de base de datos:
+
+```bash
+sudo apt install -y mariadb-server
+```
+
+Inicia el servicio:
+
+```bash
+sudo systemctl enable --now mariadb
+```
+
+Comprueba que esté funcionando:
+
+```bash
+sudo systemctl is-active mariadb
+mariadb --version
+```
+
+El servicio debe mostrar `active`.
+
+Accede a MariaDB:
+
+```bash
+sudo mariadb
+```
+
+Crea la base de datos para Moodle:
+
+```sql
+CREATE DATABASE moodle
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+```
+
+Crea un usuario específico para el entorno de desarrollo:
+
+```sql
+CREATE USER 'moodleuser'@'localhost'
+IDENTIFIED BY 'CAMBIAR_POR_UNA_CONTRASENA_SEGURA';
+```
+
+Sustituye el texto de ejemplo por una contraseña propia antes de ejecutar el comando.
+
+Concede los permisos necesarios:
+
+```sql
+GRANT ALL PRIVILEGES ON moodle.* TO 'moodleuser'@'localhost';
+```
+
+Sal de MariaDB:
+
+```sql
+EXIT;
+```
+
+Comprueba que el nuevo usuario puede conectarse:
+
+```bash
+mariadb -u moodleuser -p moodle -e "SELECT 1;"
+```
+
+Introduce la contraseña cuando se solicite. Si aparece una tabla con el valor `1`, la conexión funciona correctamente.
+
+### 3. Clonar Moodle 4.5
+
+Descarga la rama estable de Moodle 4.5 desde su repositorio oficial:
+
+```bash
+cd ~
+git clone --branch MOODLE_405_STABLE --depth 1 \
+  https://github.com/moodle/moodle.git moodle
+```
+
+Comprueba la versión descargada:
+
+```bash
+grep -E '^\$release|^\$branch' ~/moodle/version.php
+```
+
+La rama debe corresponder a Moodle 4.5 (`405`).
+
+Crea el directorio donde Moodle almacenará sus datos:
+
+```bash
+mkdir -p ~/moodledata
+chmod 700 ~/moodledata
+```
+
+Este directorio debe encontrarse fuera de la carpeta del código de Moodle y no debe ser accesible públicamente.
+
+Comprueba sus permisos:
+
+```bash
+ls -ld ~/moodledata
+```
+
+Para este entorno de desarrollo local, el mismo usuario ejecutará el instalador y el servidor PHP.
+
+### 4. Enlazar ChuspaSocial en Moodle
+
+Si todavía no tienes el repositorio ChuspaSocial, clona tu fork desde GitHub:
+
+```bash
+cd ~
+git clone https://github.com/TU_USUARIO/ChuspaSocial.git
+```
+
+Sustituye `TU_USUARIO` por tu nombre de usuario de GitHub. Si ya tienes el repositorio clonado, omite este comando.
+
+Comprueba que el plugin contiene `version.php`:
+
+```bash
+ls ~/ChuspaSocial/src/version.php
+```
+
+Ahora crea el enlace simbólico desde el directorio de plugins locales de Moodle:
+
+```bash
+ln -s "$HOME/ChuspaSocial/src" \
+  "$HOME/moodle/local/chuspasocial"
+```
+
+Verifica que el enlace funciona:
+
+```bash
+ls -l ~/moodle/local/chuspasocial
+ls ~/moodle/local/chuspasocial/version.php
+```
+
+El último comando debe mostrar la ruta de `version.php`.
+
+Este paso debe completarse antes de instalar Moodle para que ChuspaSocial se detecte durante la instalación.
+
+Si el enlace ya existe, comprueba que apunte a `src/` antes de intentar crearlo nuevamente.
+
+### 5. Instalar Moodle
+
+Ejecuta el instalador desde la carpeta de Moodle:
+
+```bash
+cd ~/moodle
+
+php admin/cli/install.php \
+  --wwwroot=http://localhost:8000 \
+  --dataroot="$HOME/moodledata" \
+  --dbtype=mariadb \
+  --dbhost=localhost \
+  --dbname=moodle \
+  --dbuser=moodleuser \
+  --fullname="ChuspaSocial Dev" \
+  --shortname=chuspa \
+  --adminuser=admin
+```
+
+El instalador utiliza un modo interactivo y solicita los datos que faltan.
+
+Durante la instalación:
+
+1. Selecciona el idioma deseado.
+2. Configura los permisos de los directorios de datos como `0700` para este entorno local.
+3. Confirma la dirección `http://localhost:8000`.
+4. Confirma la carpeta `moodledata`.
+5. Selecciona `mariadb` como controlador de base de datos.
+6. Utiliza `localhost` como servidor y `moodle` como nombre de base de datos.
+7. Conserva el prefijo `mdl_`.
+8. Utiliza `moodleuser` e introduce su contraseña.
+9. Configura la contraseña del administrador y un correo electrónico válido.
+10. Lee y acepta las condiciones de la licencia si estás de acuerdo.
+
+Las contraseñas del administrador y de la base de datos deben ser distintas. No las incluyas en capturas, documentación ni commits.
+
+Al completar el proceso, comprueba que Moodle haya creado su archivo de configuración:
+
+```bash
+ls ~/moodle/config.php
+```
+
+### 6. Iniciar Moodle y verificar ChuspaSocial
+
+Inicia el servidor integrado de PHP desde la carpeta de Moodle:
+
+```bash
+cd ~/moodle
+php -S localhost:8000
+```
+
+Este servidor se utiliza únicamente para pruebas locales de desarrollo, no para producción.
+
+Abre la siguiente dirección en el navegador:
+
+```text
+http://localhost:8000
+```
+
+Inicia sesión con el usuario `admin` y la contraseña configurada durante la instalación.
+
+Accede a **Site administration > Plugins > Plugins overview** y busca el plugin ChuspaSocial, identificado como `local_chuspasocial`.
+
+Para comprobar que el plugin está disponible:
+
+- Verifica que ChuspaSocial aparezca entre los plugins locales.
+- Comprueba que tenga una versión instalada.
+- Comprueba que su enlace aparezca en el menú de navegación de Moodle.
+
+Si estas comprobaciones son correctas, el plugin fue reconocido durante la instalación.
+
+Para detener el servidor local, presiona `Ctrl + C` en la terminal donde se ejecutó.
+
+### 7. Actualizar el plugin durante el desarrollo
+
+Como Moodle utiliza un enlace simbólico hacia `src/`, los cambios realizados en el código del repositorio se reflejan en el directorio del plugin.
+
+Si se modifica la versión del plugin o se incorporan cambios que requieran una actualización de la base de datos, ejecuta:
+
+```bash
+cd ~/moodle
+php admin/cli/upgrade.php
+```
+
+Sigue las instrucciones que aparezcan en la terminal.
+
+Para limpiar la caché de Moodle después de realizar cambios:
+
+```bash
+php admin/cli/purge_caches.php
+```
+
+### Problemas frecuentes en Ubuntu
+
+**PHP muestra `max_input_vars = 1000`.**
+
+Comprueba qué archivo de configuración está utilizando PHP:
+
+```bash
+php --ini
+```
+
+Edita el archivo `php.ini` de CLI y asegúrate de que la línea `max_input_vars = 5000` no esté comentada con `;`.
+
+**La extensión SOAP no aparece.**
+
+Instala la extensión correspondiente:
+
+```bash
+sudo apt install -y php8.3-soap
+```
+
+Comprueba que esté disponible:
+
+```bash
+php -m | grep -i soap
+```
+
+**MariaDB no está funcionando.**
+
+Verifica el estado del servicio:
+
+```bash
+sudo systemctl status mariadb
+```
+
+Si está detenido, inícialo:
+
+```bash
+sudo systemctl start mariadb
+```
+
+**No se puede conectar con la base de datos.**
+
+Comprueba que el nombre de la base de datos, el usuario y la contraseña sean correctos:
+
+```bash
+mariadb -u moodleuser -p moodle -e "SELECT 1;"
+```
+
+**El directorio `moodledata` no permite escritura.**
+
+Comprueba que el usuario actual sea el propietario y tenga los permisos necesarios:
+
+```bash
+ls -ld ~/moodledata
+```
+
+En este entorno local, el directorio debe pertenecer al usuario que ejecuta PHP.
+
+**ChuspaSocial no aparece entre los plugins.**
+
+Comprueba que el enlace simbólico exista y apunte correctamente a `src/`:
+
+```bash
+ls -l ~/moodle/local/chuspasocial
+ls ~/moodle/local/chuspasocial/version.php
+```
+
+Si el plugin fue agregado después de instalar Moodle, entra en las notificaciones de administración del sitio o ejecuta el procedimiento de actualización.
+
+**El puerto 8000 está ocupado.**
+
+Detén el proceso que utiliza ese puerto o selecciona otro para el servidor local. Si cambias el puerto, también debes actualizar `$CFG->wwwroot` en la configuración de Moodle para que coincida con la nueva dirección.
+
+### Validación realizada
+
+La instalación se comprobó en el siguiente entorno:
+
+| Componente | Versión comprobada |
+| --- | --- |
+| Sistema operativo | Linux Mint 22.3 (base Ubuntu 24.04 LTS) |
+| PHP | 8.3.6 |
+| MariaDB | 10.11.14 |
+| Moodle | 4.5.14+ |
+| ChuspaSocial | 0.1.0 |
+
+Se confirmó el funcionamiento de PHP, la conexión a MariaDB, la creación de `moodledata`, el enlace simbólico hacia `src/`, la instalación de Moodle y el acceso al panel de administración.
+
+En **Plugins overview**, Moodle mostró `local_chuspasocial` como plugin local instalado, versión `0.1.0`, con compilación `2026110600`.
+
+Esta validación corresponde a Linux Mint 22.3. La ejecución directa de todos los pasos en Ubuntu 24.04 LTS queda pendiente de comprobación.
+
 ## Problemas comunes
 
 ### Error `max_input_vars`
