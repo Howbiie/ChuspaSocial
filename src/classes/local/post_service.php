@@ -77,12 +77,6 @@ class post_service {
             $context = \context_system::instance();
         }
 
-        // Normalizar las etiquetas antes de guardarlas.
-        $tags = array_map(
-            static fn($tag) => \core_text::strtolower(trim($tag)),
-            $tags
-        );
-
         // Actualizar los tags de la publicacion.
         core_tag_tag::set_item_tags(
             'local_chuspasocial',
