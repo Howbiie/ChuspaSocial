@@ -35,7 +35,71 @@ $PAGE->set_url(new moodle_url('/local/chuspasocial/tag.php', ['tag' => $tag]));
 $PAGE->set_title($tag);
 $PAGE->set_heading(s($tag));
 
-$posts = \local_chuspasocial\external\get_feed_by_tag::execute($tag);
+
+$page = 0;
+$perpage = 20;
+
+// Obtener las publicaciones visibles de la etiqueta.
+$records = \local_chuspasocial\local\tag_service::get_feed_by_tag(
+    $tag,
+    $page,
+    $perpage
+);
+
+// Obtener los datos de reacciones en lote.
+$postids = array_map(
+    static fn($record) => (int) $record->id,
+    $records
+);
+
+$counts = \local_chuspasocial\local\reaction_service::count_for_posts($postids);
+$mine = \local_chuspasocial\local\reaction_service::has_reacted_many($postids);
+
+// Preparar las publicaciones para la plantilla.
+$posts = [];
+
+foreach ($records as $record) {
+    $record = ($record instanceof \core\persistent)
+        ? $record->to_record()
+        : (object) $record;
+
+    $author = \core_user::get_user($record->userid);
+
+    if (!$author) {
+        continue;
+    }
+
+    $postcontext = ((int) $record->courseid > 0)
+        ? \context_course::instance((int) $record->courseid)
+        : $context;
+
+    $exporter = new \local_chuspasocial\external\post_exporter(
+        $record,
+        [
+            'context' => $postcontext,
+            'author' => $author,
+            'reactions' => (int) ($counts[$record->id] ?? 0),
+            'hasreacted' => (bool) ($mine[$record->id] ?? false),
+        ]
+    );
+
+    $data = (array) $exporter->export($OUTPUT);
+
+    $data['postid'] = (int) $record->id;
+    $data['content'] = format_text(
+        $data['content'],
+        $data['contentformat'],
+        ['context' => $postcontext]
+    );
+
+    $data['authorname'] = $data['authorfullname'];
+    $data['isannouncement'] = (
+        $record->type ===
+        \local_chuspasocial\local\persistent\post::TYPE_ANNOUNCEMENT
+    );
+
+    $posts[] = $data;
+}
 
 echo $OUTPUT->header();
 echo $OUTPUT->render_from_template('local_chuspasocial/wall', ['posts' => $posts]);
