@@ -164,4 +164,105 @@ class comment_service_test extends advanced_testcase {
 
         $this->assertSame([], comment_service::get_comments($post->get('id')));
     }
+
+    /**
+     * Comprueba que el autor puede eliminar su comentario.
+     *
+     * @covers \local_chuspasocial\local\comment_service::delete_comment
+     */
+    public function test_delete_comment_como_autor(): void {
+        global $DB;
+
+        $generator = $this->getDataGenerator();
+        $plugin = $generator->get_plugin_generator('local_chuspasocial');
+
+        $autor = $generator->create_user();
+        $post = $plugin->create_post(['userid' => $autor->id]);
+        $comment = $plugin->create_comment([
+            'postid' => $post->get('id'),
+            'userid' => $autor->id,
+        ]);
+
+        $this->setUser($autor);
+
+        comment_service::delete_comment($comment->get('id'));
+
+        $this->assertFalse($DB->record_exists(
+            'local_chuspasocial_comment',
+            ['id' => $comment->get('id')]
+        ));
+    }
+
+    /**
+     * Comprueba que un moderador puede eliminar comentarios.
+     *
+     * @covers \local_chuspasocial\local\comment_service::delete_comment
+     */
+    public function test_delete_comment_como_moderador(): void {
+        global $DB;
+
+        $generator = $this->getDataGenerator();
+        $plugin = $generator->get_plugin_generator('local_chuspasocial');
+
+        $autor = $generator->create_user();
+        $moderador = $generator->create_user();
+
+        $managerrole = $DB->get_record(
+            'role',
+            ['shortname' => 'manager'],
+            '*',
+            MUST_EXIST
+        );
+
+        role_assign($managerrole->id, $moderador->id, \context_system::instance()->id);
+
+        $post = $plugin->create_post(['userid' => $autor->id]);
+        $comment = $plugin->create_comment([
+            'postid' => $post->get('id'),
+            'userid' => $autor->id,
+        ]);
+
+        $this->setUser($moderador);
+
+        comment_service::delete_comment($comment->get('id'));
+
+        $this->assertFalse($DB->record_exists(
+            'local_chuspasocial_comment',
+            ['id' => $comment->get('id')]
+        ));
+    }
+
+    /**
+     * Comprueba que otro usuario no puede eliminar un comentario ajeno.
+     *
+     * @covers \local_chuspasocial\local\comment_service::delete_comment
+     */
+    public function test_delete_comment_como_otro_usuario(): void {
+        global $DB;
+
+        $generator = $this->getDataGenerator();
+        $plugin = $generator->get_plugin_generator('local_chuspasocial');
+
+        $autor = $generator->create_user();
+        $otro = $generator->create_user();
+
+        $post = $plugin->create_post(['userid' => $autor->id]);
+        $comment = $plugin->create_comment([
+            'postid' => $post->get('id'),
+            'userid' => $autor->id,
+        ]);
+
+        $this->setUser($otro);
+
+        $this->expectException(\moodle_exception::class);
+
+        try {
+            comment_service::delete_comment($comment->get('id'));
+        } finally {
+            $this->assertTrue($DB->record_exists(
+                'local_chuspasocial_comment',
+                ['id' => $comment->get('id')]
+            ));
+        }
+    }
 }
