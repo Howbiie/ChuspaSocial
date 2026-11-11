@@ -33,6 +33,11 @@ class report extends persistent {
     /** @var string Nombre de la tabla asociada a esta clase. */
     const TABLE = 'local_chuspasocial_report';
 
+    const STATUS_PENDING = 0;
+    const STATUS_REVIEWED = 1;
+    const STATUS_DISMISSED = 2;
+    const STATUS_ACTIONED = 3;
+
     /**
      * Define las propiedades de la tabla local_chuspasocial_report.
      *
@@ -54,9 +59,8 @@ class report extends persistent {
                 'type' => PARAM_TEXT,
             ],
             'status' => [
-                'type' => PARAM_ALPHA,
-                'default' => 'open',
-                'choices' => ['open', 'resolved', 'dismissed'],
+                'type' => PARAM_INT,
+                'default' => self::STATUS_PENDING,
             ],
             'resolvedby' => [
                 'type' => PARAM_INT,
@@ -69,5 +73,18 @@ class report extends persistent {
                 'null' => NULL_ALLOWED,
             ],
         ];
+    }
+
+    protected function validate_status($value) {
+        if (!in_array($value, [
+            self::STATUS_PENDING,
+            self::STATUS_REVIEWED,
+            self::STATUS_DISMISSED,
+            self::STATUS_ACTIONED,
+        ], true)) {
+            return 'El estado del reporte no es válido.';
+        }
+
+        return true;
     }
 }

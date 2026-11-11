@@ -32,7 +32,6 @@ use core_external\external_api;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class toggle_reaction_test extends advanced_testcase {
-
     /**
      * Crea una publicacion de prueba.
      *
@@ -144,5 +143,49 @@ final class toggle_reaction_test extends advanced_testcase {
         );
 
         $this->assertSame($result, $clean);
+    }
+
+    /**
+     * Comprueba que agregar y quitar una reaccion actualiza el contador.
+     */
+    public function test_toggle_reaction_actualiza_conteo(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $user = $generator->create_user();
+
+        $generator->enrol_user($user->id, $course->id, 'student');
+
+        $postid = $this->create_post($user->id, $course->id);
+
+        $this->setUser($user);
+
+        $this->assertEquals(0, $DB->count_records(
+            'local_chuspasocial_reaction',
+            ['postid' => $postid]
+        ));
+
+        // Primera llamada: agrega la reaccion.
+        $result = toggle_reaction::execute($postid);
+
+        $this->assertTrue($result['reacted']);
+
+        $this->assertEquals(1, $DB->count_records(
+            'local_chuspasocial_reaction',
+            ['postid' => $postid]
+        ));
+
+        // Segunda llamada: elimina la reaccion.
+        $result = toggle_reaction::execute($postid);
+
+        $this->assertFalse($result['reacted']);
+
+        $this->assertEquals(0, $DB->count_records(
+            'local_chuspasocial_reaction',
+            ['postid' => $postid]
+        ));
     }
 }
