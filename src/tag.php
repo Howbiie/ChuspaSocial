@@ -35,7 +35,9 @@ $PAGE->set_url(new moodle_url('/local/chuspasocial/tag.php', ['tag' => $tag]));
 $PAGE->set_title($tag);
 $PAGE->set_heading(s($tag));
 
-$posts = \local_chuspasocial\external\get_feed_by_tag::execute($tag);
+$page = 0;
+$perpage = 20;
+$posts = \local_chuspasocial\local\tag_service::get_feed_by_tag($tag, $page, $perpage);
 
 echo $OUTPUT->header();
 echo $OUTPUT->render_from_template('local_chuspasocial/wall', ['posts' => $posts]);
