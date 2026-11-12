@@ -85,12 +85,12 @@ Ejemplo de respuesta (valores ilustrativos):
             "contentformat": 1,
             "timecreated": 1762900000,
             "authorfullname": "Ana Pérez",
-            "authorpictureurl": "https://ejemplo.edu/pluginfile.php/5/user/icon/f2",
+            "authorpictureurl": "/pluginfile.php/5/user/icon/f2",
             "canedit": true,
             "candelete": true,
             "images": [],
             "tags": [
-                {"name": "examen", "url": "https://ejemplo.edu/local/chuspasocial/tag.php?tag=examen"}
+                {"name": "examen", "url": "/local/chuspasocial/tag.php?tag=examen"}
             ],
             "reactions": 3,
             "hasreacted": false
