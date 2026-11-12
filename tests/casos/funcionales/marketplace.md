@@ -106,10 +106,28 @@ Documentar los casos de prueba manuales del Marketplace para verificar el cumpli
   5. Intentar agregar fotografías hasta superar el límite permitido.
 - **Resultado esperado:** El sistema guarda y muestra las fotografías cuando no se supera el límite. Al intentar excederlo, rechaza las fotografías adicionales y muestra un mensaje que indica el límite permitido.
 
+### CP-MKT-010 — Buscar libros por coincidencia parcial de título
+
+- **RF relacionado:** RF-035 — Buscar libros por título o autor.
+- **Precondición:** El usuario inició sesión y existe un libro publicado con el título "Introducción a la Física".
+- **Pasos:**
+  1. Acceder al Marketplace.
+  2. Buscar la palabra clave `Física`.
+  3. Verificar los resultados obtenidos.
+  4. Repetir la búsqueda con `física` en minúsculas.
+  5. Repetir la búsqueda con el texto parcial `Fís`.
+  6. Buscar una palabra clave que no coincida con ningún título.
+- **Resultado esperado:**
+  - El libro "Introducción a la Física" aparece al buscar `Física`, `física` y `Fís`.
+  - La búsqueda permite coincidencias parciales del título.
+  - Las mayúsculas y minúsculas no afectan los resultados.
+  - Una búsqueda sin coincidencias no devuelve libros incorrectos.
+- **Criterio de éxito:** Todas las búsquedas con coincidencias parciales devuelven los títulos correspondientes, independientemente de las mayúsculas o minúsculas.
+
 ## Registro de ejecución
 
 | ID del caso | Resultado obtenido | Estado | Observaciones |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | CP-MKT-001 | Pendiente de ejecución | Pendiente | |
 | CP-MKT-002 | Pendiente de ejecución | Pendiente | |
 | CP-MKT-003 | Pendiente de ejecución | Pendiente | |
@@ -119,3 +137,4 @@ Documentar los casos de prueba manuales del Marketplace para verificar el cumpli
 | CP-MKT-007 | Pendiente de ejecución | Pendiente | |
 | CP-MKT-008 | Pendiente de ejecución | Pendiente | |
 | CP-MKT-009 | Pendiente de ejecución | Pendiente | |
+| CP-MKT-010 | Pendiente de ejecución | Pendiente | |
