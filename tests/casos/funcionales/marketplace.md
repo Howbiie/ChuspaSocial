@@ -127,7 +127,7 @@ Documentar los casos de prueba manuales del Marketplace para verificar el cumpli
 ## Registro de ejecución
 
 | ID del caso | Resultado obtenido | Estado | Observaciones |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | CP-MKT-001 | Pendiente de ejecución | Pendiente | |
 | CP-MKT-002 | Pendiente de ejecución | Pendiente | |
 | CP-MKT-003 | Pendiente de ejecución | Pendiente | |
