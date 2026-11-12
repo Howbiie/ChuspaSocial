@@ -33,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2026 sis-inf
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class local_chuspasocial_generator extends component_generator_base {
     /**
      * Creates a reaction for testing.
@@ -122,5 +121,32 @@ class local_chuspasocial_generator extends component_generator_base {
 
         return $comment;
     }
-}
 
+    /**
+     * Creates a follow for testing.
+     *
+     * @param array $record Follow data.
+     * @return \local_chuspasocial\local\persistent\follow
+     */
+    public function create_follow(array $record = []): \local_chuspasocial\local\persistent\follow {
+        if (empty($record['userid'])) {
+            $user = $this->datagenerator->create_user();
+            $record['userid'] = $user->id;
+        }
+
+        $record['itemtype'] = $record['itemtype'] ?? 'user';
+
+        if (empty($record['itemid'])) {
+            // Por defecto se sigue a otro usuario.
+            $followed = $this->datagenerator->create_user();
+            $record['itemid'] = $followed->id;
+        }
+
+        $record['timecreated'] = $record['timecreated'] ?? time();
+
+        $follow = new \local_chuspasocial\local\persistent\follow(0, (object) $record);
+        $follow->create();
+
+        return $follow;
+    }
+}
