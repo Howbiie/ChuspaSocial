@@ -59,7 +59,7 @@ $capabilities = array(
     ),
     'local/chuspasocial:comment' => array(
         'captype' => 'write',
-        'contextlevel' => CONTEXT_COURSE,
+        'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => array(
             'user' => CAP_ALLOW,
             'student' => CAP_ALLOW,
@@ -70,7 +70,7 @@ $capabilities = array(
     ),
     'local/chuspasocial:react' => [
         'captype' => 'write',
-        'contextlevel' => CONTEXT_COURSE,
+        'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
             'user' => CAP_ALLOW,
             'student' => CAP_ALLOW,
@@ -96,7 +96,7 @@ $capabilities = array(
     ),
     'local/chuspasocial:post' => array(
         'captype' => 'write',
-        'contextlevel' => CONTEXT_COURSE,
+        'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => array(
             'user' => CAP_ALLOW,
             'student' => CAP_ALLOW,
