@@ -42,6 +42,7 @@ $PAGE->set_url(new moodle_url('/local/chuspasocial/index.php'));
 $PAGE->set_title(get_string('pluginname', 'local_chuspasocial'));
 $PAGE->set_heading(get_string('pluginname', 'local_chuspasocial'));
 $PAGE->requires->js_call_amd('local_chuspasocial/report', 'init');
+$PAGE->requires->js_call_amd('local_chuspasocial/wall', 'init');
 
 // Display the form only to users allowed to publish.
 $canpost = has_capability('local/chuspasocial:post', $context);
