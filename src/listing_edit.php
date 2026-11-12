@@ -51,7 +51,8 @@ $cancelurl = $id ? new moodle_url('/local/chuspasocial/listing.php', ['id' => $i
 $listing = null;
 if ($id) {
     $listing = $DB->get_record('local_chuspasocial_listing', ['id' => $id], '*', MUST_EXIST);
-    if ((int) $listing->userid !== (int) $USER->id) {
+    $listingobj = new \local_chuspasocial\local\persistent\listing($id);
+    if (!\local_chuspasocial\local\listing_service::can_manage($listingobj, (int) $USER->id)) {
         throw new moodle_exception('nopermissions', 'error', $cancelurl, get_string('edit'));
     }
 }
