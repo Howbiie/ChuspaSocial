@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Post form for ChuspaSocial.
@@ -103,6 +103,8 @@ class post_form extends \moodleform {
         $text = html_entity_decode(strip_tags($text), ENT_QUOTES, 'UTF-8');
         if (trim($text, " \t\n\r\0\x0B\xC2\xA0") === '') {
             $errors['content'] = get_string('errorpostempty', 'local_chuspasocial');
+        } else if (\core_text::strlen($text) > 2000) {
+            $errors['content'] = get_string('maxpostlength', 'local_chuspasocial');
         }
 
         return $errors;

@@ -43,6 +43,16 @@ final class post_form_test extends advanced_testcase {
     }
 
     /**
+     * Creates a post form without running its constructor.
+     *
+     * @return post_form Post form instance.
+     */
+    private function create_post_form_for_validation(): post_form {
+        $reflection = new \ReflectionClass(post_form::class);
+        return $reflection->newInstanceWithoutConstructor();
+    }
+
+    /**
      * Returns the quickform that holds the elements of the given post form.
      *
      * @param \moodleform $form Post form to get the quickform from.
@@ -63,10 +73,24 @@ final class post_form_test extends advanced_testcase {
      */
     public function test_validation_content_empty_returns_error(): void {
         $this->resetAfterTest();
-        $form = $this->create_post_form(['courseid' => 0]);
+        $form = $this->create_post_form_for_validation();
 
         $errors = $form->validation(['content' => ['text' => '']], []);
 
+        $this->assertDebuggingCalled();
+        $this->assertArrayHasKey('content', $errors);
+    }
+
+    /**
+     * Verifies that content with only spaces returns an error.
+     */
+    public function test_validation_content_only_spaces_returns_error(): void {
+        $this->resetAfterTest();
+        $form = $this->create_post_form_for_validation();
+
+        $errors = $form->validation(['content' => ['text' => '   ']], []);
+
+        $this->assertDebuggingCalled();
         $this->assertArrayHasKey('content', $errors);
     }
 
@@ -75,10 +99,11 @@ final class post_form_test extends advanced_testcase {
      */
     public function test_validation_content_html_only_returns_error(): void {
         $this->resetAfterTest();
-        $form = $this->create_post_form(['courseid' => 0]);
+        $form = $this->create_post_form_for_validation();
 
         $errors = $form->validation(['content' => ['text' => '<p></p>']], []);
 
+        $this->assertDebuggingCalled();
         $this->assertArrayHasKey('content', $errors);
     }
 
@@ -87,10 +112,11 @@ final class post_form_test extends advanced_testcase {
      */
     public function test_validation_content_only_entities_returns_error(): void {
         $this->resetAfterTest();
-        $form = $this->create_post_form(['courseid' => 0]);
+        $form = $this->create_post_form_for_validation();
 
         $errors = $form->validation(['content' => ['text' => ' &nbsp; ']], []);
 
+        $this->assertDebuggingCalled();
         $this->assertArrayHasKey('content', $errors);
     }
 
@@ -99,7 +125,7 @@ final class post_form_test extends advanced_testcase {
      */
     public function test_validation_content_real_text_returns_no_error(): void {
         $this->resetAfterTest();
-        $form = $this->create_post_form(['courseid' => 0]);
+        $form = $this->create_post_form_for_validation();
 
         $errors = $form->validation(['content' => ['text' => 'Hola']], []);
 
@@ -112,6 +138,8 @@ final class post_form_test extends advanced_testcase {
     public function test_courseid_hidden_field_takes_customdata_value(): void {
         $this->resetAfterTest();
         $form = $this->create_post_form(['courseid' => 42]);
+
+        $this->assertDebuggingCalledCount(3);
 
         $quickform = $this->get_post_quickform($form);
         $courseid = $quickform->getElementValue('courseid');
@@ -126,6 +154,8 @@ final class post_form_test extends advanced_testcase {
         $this->resetAfterTest();
         $form = $this->create_post_form(['can_post_announcement' => true]);
 
+        $this->assertDebuggingCalledCount(4);
+
         $quickform = $this->get_post_quickform($form);
         $courseid = $quickform->getElementValue('courseid');
 
@@ -137,14 +167,43 @@ final class post_form_test extends advanced_testcase {
      */
     public function test_announcement_checkbox_only_exists_with_permission(): void {
         $this->resetAfterTest();
-        $formallowed = $this->create_post_form(['courseid' => 0, 'can_post_announcement' => true]);
-        $quickformallowed = $this->get_post_quickform($formallowed);
 
+        $formallowed = $this->create_post_form(['courseid' => 0, 'can_post_announcement' => true]);
+        $this->assertDebuggingCalledCount(4);
+
+        $quickformallowed = $this->get_post_quickform($formallowed);
         $this->assertTrue($quickformallowed->elementExists('announcement'));
 
         $formdenied = $this->create_post_form(['courseid' => 0, 'can_post_announcement' => false]);
-        $quickformdenied = $this->get_post_quickform($formdenied);
+        $this->assertDebuggingCalledCount(3);
 
+        $quickformdenied = $this->get_post_quickform($formdenied);
         $this->assertFalse($quickformdenied->elementExists('announcement'));
+    }
+
+    /**
+     * Verifies that content with 2000 characters is accepted.
+     */
+    public function test_validation_content_2000_characters_returns_no_error(): void {
+        $this->resetAfterTest();
+        $form = $this->create_post_form_for_validation();
+
+        $content = str_repeat('a', 2000);
+        $errors = $form->validation(['content' => ['text' => $content]], []);
+
+        $this->assertArrayNotHasKey('content', $errors);
+    }
+
+    /**
+     * Verifies that content exceeding 2000 characters is rejected.
+     */
+    public function test_validation_content_over_2000_characters_returns_error(): void {
+        $this->resetAfterTest();
+        $form = $this->create_post_form_for_validation();
+
+        $content = str_repeat('a', 2001);
+        $errors = $form->validation(['content' => ['text' => $content]], []);
+
+        $this->assertArrayHasKey('content', $errors);
     }
 }
