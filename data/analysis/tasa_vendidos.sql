@@ -13,7 +13,10 @@ SELECT
     mes,
     SUM(es_publicado) AS libros_publicados,
     SUM(es_vendido) AS libros_vendidos,
-    ROUND(SUM(es_vendido) * 1.0 / NULLIF(SUM(es_publicado), 0), 2) AS tasa_vendidos
+    CASE
+        WHEN SUM(es_publicado) = 0 THEN 0.00
+        ELSE ROUND(SUM(es_vendido) * 1.0 / SUM(es_publicado), 2)
+    END AS tasa_vendidos
 FROM (
     SELECT
         EXTRACT(YEAR FROM fecha_publicacion) AS anio,
