@@ -248,7 +248,7 @@ class listing_service {
 
         $listing = new listing($listingid);
 
-        if ((int) $listing->get('userid') !== (int) $USER->id) {
+        if (!self::can_manage($listing, (int) $USER->id)) {
             throw new moodle_exception('nopermissions', 'error', '', 'edit this listing');
         }
 
@@ -280,7 +280,7 @@ class listing_service {
 
         $listing = new listing($listingid);
 
-        if ((int) $listing->get('userid') !== (int) $USER->id) {
+        if (!self::can_manage($listing, (int) $USER->id)) {
             throw new moodle_exception('nopermissions', 'error', '', 'mark this listing as sold');
         }
 
