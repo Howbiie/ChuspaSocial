@@ -90,7 +90,7 @@ echo $OUTPUT->heading(format_string($listing->title));
 
 echo html_writer::tag(
     'p',
-    get_string('authorname', 'moodle') . ': ' . s($listing->author)
+    get_string('bookauthor', 'local_chuspasocial') . ': ' . s($listing->author)
 );
 
 echo html_writer::tag(
