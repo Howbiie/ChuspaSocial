@@ -18,7 +18,7 @@ concatenado dentro de la sentencia SQL.
 ## Consultas encontradas
 
 | Archivo | Línea | Consulta | Estado |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | src/classes/local/listing_service.php | 56 | `get_records_sql` | OK: usa los parámetros nombrados `:title` y `:author`. |
 | src/classes/local/listing_service.php | 90 | `get_records_sql` | OK: usa el parámetro nombrado `:status` y la lista `:courseN` que genera `get_in_or_equal`. |
 | src/classes/local/post_service.php | 62 | `get_record` | OK: la condición va como array (`['id' => $postid]`). |
@@ -54,6 +54,37 @@ comodines del `LIKE` se arman con `sql_like` y `sql_like_escape`
 - src/tests/local/persistent/report_test.php
 - src/tests/local/post_service_test.php
 - src/version.php
+
+## Uso obligatorio de placeholders nombrados
+
+Queda prohibida la concatenación o interpolación directa de variables en consultas SQL,
+incluidos los métodos DML de Moodle, aunque los valores hayan sido validados.
+En consultas con `get_records_sql`, los valores deben enviarse mediante
+placeholders nombrados (`:param`) y un array asociativo de parámetros.
+
+### Ejemplo incorrecto
+
+```php
+$sql = "SELECT * FROM {local_chuspasocial_post} WHERE userid = " . $userid;
+$posts = $DB->get_records_sql($sql);
+```
+
+La concatenación directa de variables está prohibida. También está prohibida
+la interpolación de variables dentro de cadenas SQL.
+
+### Ejemplo correcto
+
+```php
+$sql = "SELECT * FROM {local_chuspasocial_post} WHERE userid = :userid";
+$params = ["userid" => $userid];
+$posts = $DB->get_records_sql($sql, $params);
+```
+
+El valor de `:userid` se transmite por separado mediante el array `$params`.
+Cada placeholder debe tener una entrada correspondiente en el array.
+
+Para condiciones `IN` dinámicas, utilizar `$DB->get_in_or_equal()`
+y vincular los parámetros resultantes, sin concatenar valores.
 
 ## Conclusión
 
