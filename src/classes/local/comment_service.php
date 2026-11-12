@@ -53,7 +53,7 @@ class comment_service {
             'timecreated ASC, id ASC'
         ));
     }
-    
+
     /**
      * Add a comment to a visible post.
      *
@@ -105,5 +105,30 @@ class comment_service {
         ])->trigger();
 
         return $comment;
+    }
+
+    /**
+     * Delete a comment if the user is its author or a moderator.
+     *
+     * @param int $commentid ID of the comment to delete.
+     * @return void
+     * @throws \moodle_exception If the user cannot delete the comment.
+     */
+    public static function delete_comment(int $commentid): void {
+        global $USER;
+
+        $comment = new \local_chuspasocial\local\persistent\comment($commentid);
+
+        $isauthor = (int) $comment->get('userid') === (int) $USER->id;
+        $ismoderator = has_capability(
+            'local/chuspasocial:moderate',
+            \context_system::instance()
+        );
+
+        if (!$isauthor && !$ismoderator) {
+            throw new \moodle_exception('nopermissions', 'error', '', 'delete this comment');
+        }
+
+        $comment->delete();
     }
 }
