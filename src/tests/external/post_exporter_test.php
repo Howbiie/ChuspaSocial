@@ -172,4 +172,49 @@ final class post_exporter_test extends advanced_testcase {
         $this->assertEquals(3, $exported->reactions);
         $this->assertTrue($exported->hasreacted);
     }
+
+    /**
+     * Verifies the author, date and content of an exported post.
+     */
+    public function test_exported_post_contains_expected_fields(): void {
+        $author = $this->getDataGenerator()->create_user([
+            'firstname' => 'Juan',
+            'lastname' => 'Perez',
+        ]);
+        $this->setUser($author);
+
+        $timecreated = time() - 300;
+        $data = $this->get_post_data(
+            (int) $author->id,
+            'Contenido de prueba',
+            $timecreated
+        );
+
+        $exported = $this->export_post(
+            $this->create_post_exporter($data, $author)
+        );
+
+        $this->assertEquals(fullname($author), $exported->authorfullname);
+        $this->assertEquals($timecreated, $exported->timecreated);
+        $this->assertStringContainsString('Contenido de prueba', $exported->content);
+    }
+
+    /**
+     * Verifies that dangerous script tags are removed from exported content.
+     */
+    public function test_exported_post_sanitizes_script_tags(): void {
+        $author = $this->getDataGenerator()->create_user();
+        $this->setUser($author);
+
+        $content = '<p>Texto seguro</p><script>alert("prueba")</script>';
+        $data = $this->get_post_data((int) $author->id, $content);
+
+        $exported = $this->export_post(
+            $this->create_post_exporter($data, $author)
+        );
+
+        $this->assertStringContainsString('Texto seguro', $exported->content);
+        $this->assertStringNotContainsString('<script', strtolower($exported->content));
+        $this->assertStringNotContainsString('</script', strtolower($exported->content));
+    }
 }
