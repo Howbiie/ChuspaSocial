@@ -8,12 +8,12 @@ Capacidades del plugin `local_chuspasocial` y qué rol puede ejercerlas.
 | `local/chuspasocial:postannouncement` | No definido | No definido | Permitir | No definido | Permitir |
 | `local/chuspasocial:view` | Permitir | No definido | No definido | No definido | No definido |
 | `local/chuspasocial:comment` | Permitir | Permitir | Permitir | Permitir | No definido |
-| `local/chuspasocial:createlisting` | No definido | No definido | No definido | No definido | No definido |
+| `local/chuspasocial:createlisting` | Permitir | No definido | No definido | No definido | No definido |
 | `local/chuspasocial:follow` | Permitir | No definido | No definido | No definido | No definido |
-| `local/chuspasocial:moderate` | No definido | No definido | No definido | No definido | No definido |
-| `local/chuspasocial:post` | No definido | No definido | No definido | No definido | No definido |
-| `local/chuspasocial:react` | No definido | No definido | No definido | No definido | No definido |
-| `local/chuspasocial:viewmarketplace` | No definido | No definido | No definido | No definido | No definido |
+| `local/chuspasocial:moderate` | No definido | No definido | No definido | No definido | Permitir |
+| `local/chuspasocial:post` | Permitir | Permitir | Permitir | Permitir | No definido |
+| `local/chuspasocial:react` | Permitir | Permitir | Permitir | Permitir | No definido |
+| `local/chuspasocial:viewmarketplace` | Permitir | No definido | No definido | No definido | No definido |
 
 ## Contexto de cada capacidad
 
@@ -23,11 +23,9 @@ Capacidades del plugin `local_chuspasocial` y qué rol puede ejercerlas.
 | `local/chuspasocial:postannouncement` | Curso |
 | `local/chuspasocial:view` | Sistema |
 | `local/chuspasocial:comment` | Curso |
-| `local/chuspasocial:createlisting` | No definido |
+| `local/chuspasocial:createlisting` | Sistema |
 | `local/chuspasocial:follow` | Sistema |
-| `local/chuspasocial:moderate` | No definido |
-| `local/chuspasocial:post` | No definido |
-| `local/chuspasocial:react` | No definido |
-| `local/chuspasocial:viewmarketplace` | No definido |
-
-> Solo `report`, `postannouncement`, `view`, `follow` y `comment` están definidas en `src/db/access.php`. Para las otras cinco capacidades no hay roles ni contexto definidos, por lo que se marcan como "No definido" sin inferir permisos.
+| `local/chuspasocial:moderate` | Sistema |
+| `local/chuspasocial:post` | Curso |
+| `local/chuspasocial:react` | Curso |
+| `local/chuspasocial:viewmarketplace` | Sistema |
