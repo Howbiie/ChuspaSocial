@@ -28,6 +28,7 @@ instancia con `::create()`. Las clases actuales no agregan datos específicos en
 | `post_deleted` | `\local_chuspasocial\event\post_deleted` | `local_chuspasocial_post` | `d` | `LEVEL_PARTICIPATING` | `objectid`: id de la publicación eliminada; `userid`: usuario que elimina; `context`: curso de la publicación o sistema para el muro general. |
 | `comment_created` | `\local_chuspasocial\event\comment_created` | `local_chuspasocial_comment` | `c` | `LEVEL_PARTICIPATING` | `objectid`: id del comentario; `userid`: autor del comentario; `context`: se proporciona al crear el evento. |
 | `reaction_added` | `\local_chuspasocial\event\reaction_added` | `local_chuspasocial_reaction` | `c` | `LEVEL_PARTICIPATING` | `objectid`: id de la reacción; `userid`: usuario que reacciona; `context`: se proporciona al crear el evento. |
+| `listing_created` | `\local_chuspasocial\event\listing_created` | `local_chuspasocial_listing` | `c` | `LEVEL_PARTICIPATING` | `objectid`: id del anuncio; `userid`: usuario que lo crea; `context`: se proporciona al crear el evento. |
 
 ### `post_created`
 
@@ -75,6 +76,18 @@ Representa la creación de una reacción.
 - **CRUD:** creación (`c`).
 - **Nivel educativo:** `LEVEL_PARTICIPATING`.
 - **Datos:** el id de la reacción viaja en `objectid` y el usuario que reacciona
+  en `userid`.
+- **`other`:** no se define información adicional actualmente.
+
+### `listing_created`
+
+Representa la creación de un anuncio.
+
+- **Clase:** `\local_chuspasocial\event\listing_created`.
+- **Objeto afectado:** registro de `local_chuspasocial_listing`.
+- **CRUD:** creación (`c`).
+- **Nivel educativo:** `LEVEL_PARTICIPATING`.
+- **Datos:** el id del anuncio viaja en `objectid` y el usuario que lo crea
   en `userid`.
 - **`other`:** no se define información adicional actualmente.
 
