@@ -25,7 +25,9 @@
 require_once(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
-
+$page = max(0, optional_param('page', 0, PARAM_INT));
+$perpage = 20;
+$limitfrom = $page * $perpage;
 require_login();
 
 $context = context_system::instance();
@@ -73,8 +75,16 @@ $posts = $DB->get_records_select(
     'local_chuspasocial_post',
     "userid = :userid AND hidden = 0 AND courseid $insql",
     $params,
-    'timecreated DESC, id DESC'
+    'timecreated DESC, id DESC',
+    '*',
+    $limitfrom,
+    $perpage + 1
 );
+
+$hasnext = count($posts) > $perpage;
+if ($hasnext) {
+    $posts = array_slice($posts, 0, $perpage, true);
+}
 
 echo $OUTPUT->header();
 
@@ -91,5 +101,25 @@ foreach ($posts as $post) {
     echo html_writer::div(userdate($post->timecreated));
     echo html_writer::end_div();
 }
+
+echo html_writer::start_div('local-chuspasocial-pagination');
+
+if ($page > 0) {
+    $previousurl = new moodle_url('/local/chuspasocial/profile.php', [
+        'id' => $id,
+        'page' => $page - 1,
+    ]);
+    echo html_writer::link($previousurl, get_string('previous')) . ' ';
+}
+
+if ($hasnext) {
+    $nexturl = new moodle_url('/local/chuspasocial/profile.php', [
+        'id' => $id,
+        'page' => $page + 1,
+    ]);
+    echo html_writer::link($nexturl, get_string('next'));
+}
+
+echo html_writer::end_div();
 
 echo $OUTPUT->footer();
