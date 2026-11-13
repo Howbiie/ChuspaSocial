@@ -3,7 +3,7 @@
 Capacidades del plugin `local_chuspasocial` y qué rol puede ejercerlas.
 
 | Capacidad | Usuario autenticado | Estudiante | Docente | Docente sin edición | Gestor |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | `local/chuspasocial:report` | Permitir | No definido | No definido | No definido | No definido |
 | `local/chuspasocial:postannouncement` | No definido | No definido | Permitir | No definido | Permitir |
 | `local/chuspasocial:view` | Permitir | No definido | No definido | No definido | No definido |
@@ -18,7 +18,7 @@ Capacidades del plugin `local_chuspasocial` y qué rol puede ejercerlas.
 ## Contexto de cada capacidad
 
 | Capacidad | Contexto |
-|---|---|
+| --- | --- |
 | `local/chuspasocial:report` | Sistema |
 | `local/chuspasocial:postannouncement` | Curso |
 | `local/chuspasocial:view` | Sistema |
