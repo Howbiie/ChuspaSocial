@@ -23,7 +23,7 @@ instancia con `::create()`. Las clases actuales no agregan datos específicos en
 ## Eventos disponibles
 
 | Evento | Clase | Tabla del objeto | CRUD | Nivel educativo | Contexto y datos principales |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | `post_created` | `\local_chuspasocial\event\post_created` | `local_chuspasocial_post` | `c` | `LEVEL_PARTICIPATING` | `objectid`: id de la publicación; `userid`: autor de la acción; `context`: se proporciona al crear el evento. |
 | `post_deleted` | `\local_chuspasocial\event\post_deleted` | `local_chuspasocial_post` | `d` | `LEVEL_PARTICIPATING` | `objectid`: id de la publicación eliminada; `userid`: usuario que elimina; `context`: curso de la publicación o sistema para el muro general. |
 | `comment_created` | `\local_chuspasocial\event\comment_created` | `local_chuspasocial_comment` | `c` | `LEVEL_PARTICIPATING` | `objectid`: id del comentario; `userid`: autor del comentario; `context`: se proporciona al crear el evento. |
